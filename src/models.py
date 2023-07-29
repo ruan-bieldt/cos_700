@@ -71,25 +71,61 @@ class ResNet(ImageClassificationBase):
         return out
 
 
-class ResNetLarge(ImageClassificationBase):
-    def __init__(self, in_channels, num_classes):
+class ResNetMedium(ImageClassificationBase):
+    def __init__(self, in_channels, num_classes, layers):
         super().__init__()
 
         self.conv1 = conv_block(in_channels, 64)
-        self.conv2_x = self.make_layers(64, 256, 3, False)
-        self.conv3_x = self.make_layers(256, 512, 4, True)
-        self.conv4_x = self.make_layers(512, 1024, 6, True)
-        self.conv5_x = self.make_layers(1024, 2048, 3, True)
-        self.classifier = nn.Sequential(nn.AdaptiveAvgPool2d(1),
-                                        nn.Linear(2048, num_classes))
+        self.conv2_x = self.make_layers(64, 64, layers[0], False)
+        self.conv3_x = self.make_layers(64, 128, layers[1], True)
+        self.conv4_x = self.make_layers(128, 256, layers[2], True)
+        self.conv5_x = self.make_layers(256, 512, layers[3], True)
+        self.classifier = nn.Linear(512, num_classes)
 
     def make_layers(self, channels_in, channels_out, n, downsample):
         layers = []
         if downsample:
-            layers.append(LargeResidualBlock(channels_in, channels_out, 2))
+            layers.append(ResidualBlock(channels_in, channels_out, 2))
             channels_in = channels_out
         else:
-            layers.append(LargeResidualBlock(channels_in, channels_out))
+            layers.append(ResidualBlock(channels_in, channels_out))
+        layers.append(ResidualBlock(channels_in, channels_out))
+        for n in range(n-1):
+            layers.append(ResidualBlock(channels_in, channels_out))
+            layers.append(ResidualBlock(channels_in, channels_out))
+        return nn.Sequential(*layers)
+
+    def forward(self, xb):
+        out = self.conv1(xb)
+        out = self.conv2_x(out)
+        out = self.conv3_x(out)
+        out = self.conv4_x(out)
+        out = self.conv5_x(out)
+        out = torch.mean(out, dim=[2, 3])
+        out = self.classifier(out)
+
+        return out
+
+
+class ResNetLarge(ImageClassificationBase):
+    def __init__(self, in_channels, num_classes, layers):
+        super().__init__()
+
+        self.conv1 = conv_block(in_channels, 128)
+        self.conv2_x = self.make_layers(64, 256, layers[0], False)
+        self.conv3_x = self.make_layers(128, 512, layers[1], True)
+        self.conv4_x = self.make_layers(256, 1024, layers[2], True)
+        self.conv5_x = self.make_layers(512, 2048, layers[3], True)
+        self.classifier = nn.Linear(2048, num_classes)
+
+    def make_layers(self, channels_in, channels_out, n, downsample):
+        layers = []
+        if downsample:
+            layers.append(LargeResidualBlock(
+                channels_in, channels_out, True, 2))
+            channels_in = channels_out
+        else:
+            layers.append(LargeResidualBlock(channels_in, channels_out, True))
         layers.append(LargeResidualBlock(channels_in, channels_out))
         layers.append(LargeResidualBlock(channels_in, channels_out))
         for n in range(n-1):
@@ -104,6 +140,7 @@ class ResNetLarge(ImageClassificationBase):
         out = self.conv3_x(out)
         out = self.conv4_x(out)
         out = self.conv5_x(out)
+        out = torch.mean(out, dim=[2, 3])
         out = self.classifier(out)
 
         return out

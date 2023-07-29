@@ -4,30 +4,38 @@ import torch.nn.functional as F
 
 
 class LargeResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, stride=1):
+    def __init__(self, in_channels, out_channels, start=False, stride=1):
         super(LargeResidualBlock, self).__init__()
 
-        self.conv1 = nn.Conv2d(in_channels, out_channels/4,
-                               kernel_size=1, stride=stride, padding=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(out_channels/4)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv2d(
-            out_channels/4, out_channels/4, kernel_size=3, stride=1, padding=1, bias=False)
-        self.bn2 = nn.BatchNorm2d(out_channels/4)
-        self.conv3 = nn.Conv2d(out_channels/4, out_channels,
-                               kernel_size=1, stride=1, padding=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(out_channels)
-
-        # If the stride is not 1 or the number of input channels is different from the output channels,
-        # we need to adjust the dimensions using a 1x1 convolutional layer (projection)
-        if stride != 1 or in_channels != out_channels:
+        if start:
+            self.conv1 = nn.Conv2d(in_channels*2, in_channels,
+                                   kernel_size=1, stride=stride, bias=False)
+            self.bn1 = nn.BatchNorm2d(in_channels)
             self.projection = nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size=1,
+                nn.Conv2d(in_channels*2, out_channels, kernel_size=1,
                           stride=stride, bias=False),
                 nn.BatchNorm2d(out_channels)
             )
         else:
-            self.projection = nn.Identity()
+            self.conv1 = nn.Conv2d(out_channels, in_channels,
+                                   kernel_size=1, stride=stride, bias=False)
+            self.bn1 = nn.BatchNorm2d(in_channels)
+            self.projection = nn.Sequential(
+                nn.Conv2d(out_channels, out_channels, kernel_size=1,
+                          stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels)
+            )
+
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv2d(
+            in_channels, in_channels, kernel_size=3, stride=1, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(in_channels)
+        self.conv3 = nn.Conv2d(in_channels, out_channels,
+                               kernel_size=1, stride=1, bias=False)
+        self.bn3 = nn.BatchNorm2d(out_channels)
+
+        # If the stride is not 1 or the number of input channels is different from the output channels,
+        # we need to adjust the dimensions using a 1x1 convolutional layer (projection)
 
     def forward(self, x):
         identity = x
