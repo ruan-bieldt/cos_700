@@ -11,15 +11,13 @@
 ulimit -s unlimited
 echo 'Starting run script'
 cd /mnt/lustre/users/rbieldt/cos_700
-
+source /mnt/lustre/users/rbieldt/cos_700/venv/bin/activate
 module load chpc/python/anaconda/3-2021.11
-
-source venv/bin/activate
 cd src
 runs="1"
 
 for run in $runs
 do
-    echo 'Starting run: $run '
-    python main.py $run
+    echo 'Starting run'
+    python /mnt/lustre/users/rbieldt/cos_700/main.py $run
 done
