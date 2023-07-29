@@ -1,6 +1,6 @@
 #!/bin/sh
 #PBS -N experiment_run
-#PBS -q serial
+#PBS -q gpu_1
 #PBS -P CSCI1166
 #PBS -l select=1:ncpus=10:mem=64gb
 #PBS -l walltime=12:00:00
