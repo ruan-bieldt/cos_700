@@ -19,5 +19,5 @@ runs="1"
 for run in $runs
 do
     echo 'Starting run'
-    python /mnt/lustre/users/rbieldt/cos_700/main.py $run
+    python main.py $run
 done
