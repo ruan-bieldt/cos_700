@@ -22,12 +22,20 @@ def main():
     #     print("##############################################")
 
     print("##############################################")
-    print("Starting resnet medium run")
+    print("Starting resnet medium 1 run")
     model = ResNetMedium(3, 100, [2, 2, 2, 2])
     model.to(get_default_device())
     runner = ModelRunner(model, dataloader.trainloader,
                          dataloader.testloader, 200, 0.001, 0.01, 0.01)
     runner.run(4)
+    print("##############################################")
+    print("Starting resnet medium 2 run")
+    model = ResNetMedium(3, 100, [3, 4, 6, 3])
+    model.to(get_default_device())
+    runner = ModelRunner(model, dataloader.trainloader,
+                         dataloader.testloader, 200, 0.001, 0.01, 0.01)
+    runner.run(4)
+    dataloader = DataWrapper("cifar", 200)
     print("##############################################")
     print("Starting resnet Large 1 run")
     model = ResNetLarge(3, 100, [3, 4, 6, 3])
