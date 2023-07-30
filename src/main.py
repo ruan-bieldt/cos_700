@@ -10,16 +10,16 @@ def main():
     print("##############################################")
     dataloader = DataWrapper("cifar", 400)
     size = 1
-    for i in range(10):
-        print("Starting run with n=" + str(i))
+    # for i in range(10):
+    #     print("Starting run with n=" + str(i))
 
-        model = ResNet(3, 100, size)
-        model.to(get_default_device())
-        runner = ModelRunner(model, dataloader.trainloader,
-                             dataloader.testloader, 150, 0.001, 0.01, 0.01)
-        runner.run(4)
-        size += 2
-        print("##############################################")
+    #     model = ResNet(3, 100, size)
+    #     model.to(get_default_device())
+    #     runner = ModelRunner(model, dataloader.trainloader,
+    #                          dataloader.testloader, 150, 0.001, 0.01, 0.01)
+    #     runner.run(4)
+    #     size += 2
+    #     print("##############################################")
 
     print("##############################################")
     print("Starting resnet medium run")

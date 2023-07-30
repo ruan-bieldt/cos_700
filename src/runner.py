@@ -12,6 +12,7 @@ class ModelRunner:
         self.max_lr = max_lr
         self.grad_clip = grad_clip
         self.weight_decay = weight_decay
+        self.mac_accuracy = 0.0
 
     @torch.no_grad()
     def evaluate(self):
@@ -70,6 +71,6 @@ class ModelRunner:
         self.history = [self.evaluate()]
         print(self.history)
         for i in range(splits):
-            print("Starting cycle " + str(i) + "\n")
+            print("Starting cycle " + str(i+1) + "\n")
             self.history += self.fit_one_cycle(int(self.epochs/splits))
             self.max_lr /= 10
