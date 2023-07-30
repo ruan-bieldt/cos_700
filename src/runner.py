@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 
 
-class ModelRunner:
-    def __init__(self, model, train_loader, test_loader, epochs, max_lr, grad_clip, weight_decay):
+class BaseTrainer:
+    def __init__(self, model, name, train_loader, test_loader, epochs, max_lr, grad_clip, weight_decay):
         self.model = model
         self.train_loader = train_loader
         self.test_loader = test_loader
@@ -12,7 +12,9 @@ class ModelRunner:
         self.max_lr = max_lr
         self.grad_clip = grad_clip
         self.weight_decay = weight_decay
-        self.mac_accuracy = 0.0
+        self.max_accuracy = 0.0
+        self.name = name
+        torch.cuda.empty_cache()
 
     @torch.no_grad()
     def evaluate(self):
@@ -63,6 +65,9 @@ class ModelRunner:
             result['train_loss'] = torch.stack(train_losses).mean().item()
             result['lrs'] = lrs
             self.model.epoch_end(epoch, result)
+            if result['val_acc'] > self.max_accuracy:
+                torch.save(self.model.state_dict(),
+                           "./models/"+self.name+".pth")
             history.append(result)
         return history
 
