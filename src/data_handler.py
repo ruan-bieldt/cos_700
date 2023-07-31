@@ -4,11 +4,62 @@ import torch
 import torchvision.transforms as tt
 
 
+import os
+from PIL import Image
+from torch.utils.data import Dataset
+
+
+class TinyImageNetDataset(Dataset):
+    def __init__(self, root, train=False, transform=None):
+        self.root = root
+        self.train = train
+        self.transform = transform
+
+        if self.train:
+            self.data_folder = os.path.join(self.root, 'train')
+        else:
+            self.data_folder = os.path.join(self.root, 'val', 'images')
+            self.labels_file = os.path.join(
+                self.root, 'val', 'val_annotations.txt')
+            self.labels = self._load_labels()
+
+        self.image_paths = sorted(os.listdir(self.data_folder))
+
+    def __len__(self):
+        return len(self.image_paths)
+
+    def __getitem__(self, idx):
+        image_name = self.image_paths[idx]
+        image_path = os.path.join(self.data_folder, image_name)
+        image = Image.open(image_path).convert('RGB')
+
+        if self.mode == 'val':
+            label = self.labels[image_name]
+        else:
+            label = image_name.split('_')[0]
+
+        if self.transform is not None:
+            image = self.transform(image)
+
+        return image, label
+
+    def _load_labels(self):
+        labels = {}
+        with open(self.labels_file, 'r') as f:
+            for line in f:
+                line = line.strip().split('\t')
+                labels[line[0]] = line[1]
+        return labels
+
+
 class DataWrapper:
     def __init__(self, name, batch_size):
         if name == "cifar":
             train_data = torchvision.datasets.CIFAR100(
                 './data', train=True, download=True)
+        elif name == "tiny":
+            train_data = TinyImageNetDataset(
+                './data', train=True)
         x = np.concatenate([np.asarray(train_data[i][0])
                            for i in range(len(train_data))])
         # calculate the mean and std along the (0, 1) axes
@@ -31,6 +82,13 @@ class DataWrapper:
                                                     train=False,
                                                     download=True,
                                                     transform=transform_test)
+        elif name == "tiny":
+            trainset = TinyImageNetDataset("./data",
+                                           train=True,
+                                           transform=transform_train)
+            testset = TinyImageNetDataset("./data",
+                                          train=False,
+                                          transform=transform_test)
         self.trainloader = torch.utils.data.DataLoader(
             trainset, batch_size, shuffle=True, num_workers=2, pin_memory=True)
         self.testloader = torch.utils.data.DataLoader(

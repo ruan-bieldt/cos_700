@@ -37,15 +37,19 @@ class ImageClassificationBase(nn.Module):
 
 
 class ResNet(ImageClassificationBase):
-    def __init__(self, in_channels, num_classes, n):
+    def __init__(self, in_channels, num_classes, n, init_channels):
         super().__init__()
 
-        self.conv1 = conv_block(in_channels, 32)
-        self.conv2_x = self.make_layers(32, 32, n, False)
-        self.conv3_x = self.make_layers(32, 64, n, True)
-        self.conv4_x = self.make_layers(64, 128, n, True)
+        self.conv1 = conv_block(in_channels, init_channels)
+        self.conv2_x = self.make_layers(init_channels, init_channels, n, False)
+        init_channels *= 2
+        self.conv3_x = self.make_layers(
+            init_channels//2, init_channels, n, True)
+        init_channels *= 2
+        self.conv4_x = self.make_layers(
+            init_channels//2, init_channels, n, True)
 
-        self.classifier = nn.Linear(128, num_classes)
+        self.classifier = nn.Linear(init_channels, num_classes)
 
     def make_layers(self, channels_in, channels_out, n, downsample):
         layers = []
