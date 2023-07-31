@@ -40,7 +40,7 @@ def main():
                              dataloader.testloader, 400, 0.001, 0.01, 0.01)
         runner.run(4)
     elif mode == "large":
-        dataloader = DataWrapper("cifar", 100)
+        dataloader = DataWrapper("cifar", 50)
         print("##############################################")
         print("Starting resnet Large 1 run")
         name = "resnet50_"+str(run)
