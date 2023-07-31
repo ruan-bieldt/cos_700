@@ -46,7 +46,6 @@ def main():
         name = "resnet50_"+str(run)
         model = ResNetLarge(3, 100, [3, 4, 6, 3])
         model.to(get_default_device())
-        print("Running on:"+get_default_device())
         runner = BaseTrainer(model, name, dataloader.trainloader,
                              dataloader.testloader, 400, 0.001, 0.01, 0.01)
         runner.run(4)
