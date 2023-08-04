@@ -130,11 +130,7 @@ class ResNetLarge(ImageClassificationBase):
             channels_in = channels_out
         else:
             layers.append(LargeResidualBlock(channels_in, channels_out, True))
-        layers.append(LargeResidualBlock(channels_in, channels_out))
-        layers.append(LargeResidualBlock(channels_in, channels_out))
         for n in range(n-1):
-            layers.append(LargeResidualBlock(channels_in, channels_out))
-            layers.append(LargeResidualBlock(channels_in, channels_out))
             layers.append(LargeResidualBlock(channels_in, channels_out))
         return nn.Sequential(*layers)
 
