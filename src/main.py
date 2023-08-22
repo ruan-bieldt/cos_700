@@ -11,61 +11,61 @@ def main():
     print("##############################################")
     dataloader = DataWrapper("cifar", 400)
     size = 1
-    # for i in range(10):
-    #     print("Starting run with n=" + str(i))
+    for i in range(5):
+        print("Starting run with n=" + str(i))
 
-    #     model = ResNet(3, 100, size)
-    #     model.to(get_default_device())
-    #     runner = BaseTrainer(model, dataloader.trainloader,
-    #                          dataloader.testloader, 150, 0.001, 0.01, 0.01)
-    #     runner.run(4)
-    #     size += 2
+        model = ResNet(3, 100, size)
+        model.to(get_default_device())
+        runner = BaseTrainer(model, dataloader.trainloader,
+                             dataloader.testloader, 150, 0.001, 0.01, 0.01)
+        runner.run(3)
+        size += 2
+        print("##############################################")
+
+    print("##############################################")
+    print("Starting resnet medium 1 run")
+    name = "resnet18_"+str(run)
+    model = ResNetMedium(3, 100, [2, 2, 2, 2])
+    model.to(get_default_device())
+    runner = BaseTrainer(model, name, dataloader.trainloader,
+                         dataloader.testloader, 300, 0.001, 0.01, 0.01)
+    runner.run(3)
+    # elif mode == "med2":
     #     print("##############################################")
-    if mode == "med1":
-        print("##############################################")
-        print("Starting resnet medium 1 run")
-        name = "resnet18_"+str(run)
-        model = ResNetMedium(3, 100, [2, 2, 2, 2])
-        model.to(get_default_device())
-        runner = BaseTrainer(model, name, dataloader.trainloader,
-                             dataloader.testloader, 400, 0.001, 0.01, 0.01)
-        runner.run(4)
-    elif mode == "med2":
-        print("##############################################")
-        print("Starting resnet medium 2 run")
-        name = "resnet34_"+str(run)
-        model = ResNetMedium(3, 100, [3, 4, 6, 3])
-        model.to(get_default_device())
-        runner = BaseTrainer(model, name, dataloader.trainloader,
-                             dataloader.testloader, 400, 0.001, 0.01, 0.01)
-        runner.run(4)
-    elif mode == "large":
-        # dataloader = DataWrapper("cifar", 100)
-        # print("##############################################")
-        # print("Starting resnet Large 1 run")
-        # name = "resnet50_"+str(run)
-        # model = ResNetLarge(3, 100, [3, 4, 6, 3])
-        # model.to(get_default_device())
-        # runner = BaseTrainer(model, name, dataloader.trainloader,
-        #                      dataloader.testloader, 400, 0.001, 0.01, 0.01)
-        # runner.run(3)
-        print("##############################################")
-        print("Starting resnet Large 2 run")
-        dataloader = DataWrapper("cifar", 50)
-        name = "resnet101_"+str(run)
-        model = ResNetLarge(3, 100, [3, 4, 23, 3])
-        model.to(get_default_device())
-        runner = BaseTrainer(model, name, dataloader.trainloader,
-                             dataloader.testloader, 400, 0.0002, 0.01, 0.01)
-        runner.run(4)
-        print("##############################################")
-        print("Starting resnet Large 3 run")
-        name = "resnet152_"+str(run)
-        model = ResNetLarge(3, 100, [3, 4, 36, 3])
-        model.to(get_default_device())
-        runner = BaseTrainer(model, name, dataloader.trainloader,
-                             dataloader.testloader, 400, 0.001, 0.01, 0.01)
-        runner.run(4)
+    #     print("Starting resnet medium 2 run")
+    #     name = "resnet34_"+str(run)
+    #     model = ResNetMedium(3, 100, [3, 4, 6, 3])
+    #     model.to(get_default_device())
+    #     runner = BaseTrainer(model, name, dataloader.trainloader,
+    #                          dataloader.testloader, 400, 0.001, 0.01, 0.01)
+    #     runner.run(4)
+    # elif mode == "large":
+    # dataloader = DataWrapper("cifar", 100)
+    # print("##############################################")
+    # print("Starting resnet Large 1 run")
+    # name = "resnet50_"+str(run)
+    # model = ResNetLarge(3, 100, [3, 4, 6, 3])
+    # model.to(get_default_device())
+    # runner = BaseTrainer(model, name, dataloader.trainloader,
+    #                      dataloader.testloader, 400, 0.001, 0.01, 0.01)
+    # runner.run(3)
+    # print("##############################################")
+    # print("Starting resnet Large 2 run")
+    # dataloader = DataWrapper("cifar", 50)
+    # name = "resnet101_"+str(run)
+    # model = ResNetLarge(3, 100, [3, 4, 23, 3])
+    # model.to(get_default_device())
+    # runner = BaseTrainer(model, name, dataloader.trainloader,
+    #                      dataloader.testloader, 400, 0.0002, 0.01, 0.01)
+    # runner.run(4)
+    # print("##############################################")
+    # print("Starting resnet Large 3 run")
+    # name = "resnet152_"+str(run)
+    # model = ResNetLarge(3, 100, [3, 4, 36, 3])
+    # model.to(get_default_device())
+    # runner = BaseTrainer(model, name, dataloader.trainloader,
+    #                      dataloader.testloader, 400, 0.001, 0.01, 0.01)
+    # runner.run(4)
 
 
 if __name__ == '__main__':
