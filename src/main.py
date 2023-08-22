@@ -14,7 +14,7 @@ def main():
     for i in range(5):
         print("Starting run with n=" + str(i))
 
-        model = ResNet(3, 100, size)
+        model = ResNet(3, 100, size, 64)
         model.to(get_default_device())
         runner = BaseTrainer(model, dataloader.trainloader,
                              dataloader.testloader, 150, 0.001, 0.01, 0.01)

@@ -19,5 +19,5 @@ runs="1"
 for run in $runs
 do
     echo 'Starting run'
-    python main.py $run 'med2'
+    python main.py $run 'med1'
 done
