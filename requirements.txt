@@ -3,6 +3,7 @@ certifi
 charset-normalizer
 filelock
 idna
+imageio
 Jinja2
 MarkupSafe
 mpmath
@@ -14,6 +15,7 @@ requests
 sympy
 torch
 torchvision
+tqdm
 typing_extensions
 urllib3
 userpath
