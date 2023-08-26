@@ -59,7 +59,7 @@ class DataWrapper:
                 './data', train=True, download=True)
         elif name == "tiny":
             train_data = TinyImageNetDataset(
-                '/mnt/lustre/users/rbieldt/cos_700/data/tiny-imagenet-200', train=True)
+                '/mnt/lustre/users/rbieldt/cos_700/src/data/tiny-imagenet-200', train=True)
         x = np.concatenate([np.asarray(train_data[i][0])
                            for i in range(len(train_data))])
         # calculate the mean and std along the (0, 1) axes
@@ -83,10 +83,10 @@ class DataWrapper:
                                                     download=True,
                                                     transform=transform_test)
         elif name == "tiny":
-            trainset = TinyImageNetDataset("/mnt/lustre/users/rbieldt/cos_700/data/tiny-imagenet-200",
+            trainset = TinyImageNetDataset("/mnt/lustre/users/rbieldt/cos_700/src/data/tiny-imagenet-200",
                                            train=True,
                                            transform=transform_train)
-            testset = TinyImageNetDataset("/mnt/lustre/users/rbieldt/cos_700/data/tiny-imagenet-200",
+            testset = TinyImageNetDataset("/mnt/lustre/users/rbieldt/cos_700/src/data/tiny-imagenet-200",
                                           train=False,
                                           transform=transform_test)
         self.trainloader = torch.utils.data.DataLoader(
