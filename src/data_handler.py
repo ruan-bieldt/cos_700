@@ -134,6 +134,7 @@ class TinyImageNetDataset(Dataset):
     def __getitem__(self, idx):
         if self.preload:
             img = self.img_data[idx]
+            img = _add_channels(img)
             lbl = None if self.mode == 'test' else self.label_data[idx]
         else:
             s = self.samples[idx]
