@@ -180,7 +180,6 @@ class DataWrapper:
                                                     transform=transform_test)
         elif name == "tiny":
             trainset = TinyImageNetDataset("/mnt/lustre/users/rbieldt/cos_700/src/data/tiny-imagenet-200",
-                                           train=True,
                                            transform=transform_train)
             testset = TinyImageNetDataset("/mnt/lustre/users/rbieldt/cos_700/src/data/tiny-imagenet-200",
                                           mode='test',
