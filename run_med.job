@@ -13,6 +13,7 @@ echo 'Starting run script'
 cd /mnt/lustre/users/rbieldt/cos_700
 source /mnt/lustre/users/rbieldt/cos_700/venv/bin/activate
 module load chpc/python/anaconda/3-2021.11
+pip install tensorboard
 cd FT
 runs="1"
 
