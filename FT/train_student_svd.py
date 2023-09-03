@@ -199,8 +199,8 @@ def train(teacher, student, epoch):
         teacher_outputs = teacher(inputs)
         student_outputs = student(inputs)
 
-        teacher_features = apply_svd(teacher_outputs[2], 10)
-        student_features = apply_svd(student_outputs[2], 10)
+        teacher_features = apply_svd(teacher_outputs[2].cpu(), 10)
+        student_features = apply_svd(student_outputs[2].cpu(), 10)
 
         loss = BETA * (criterion(utils.FT(student_features), utils.FT(
             teacher_features.detach()))) + criterion_CE(student_outputs[3], targets)
