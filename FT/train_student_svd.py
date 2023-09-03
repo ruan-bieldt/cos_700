@@ -113,7 +113,7 @@ scheduler = optim.lr_scheduler.MultiStepLR(
 
 def apply_svd(feature_maps, num_singular_values_to_keep):
     # Reshape the feature maps for SVD
-    batch_size, num_channels, height, width = feature_maps.shape()
+    batch_size, num_channels, height, width = feature_maps.size()
     reshaped_feature_maps = feature_maps.view(batch_size, num_channels, -1)
 
     # Compute SVD
@@ -188,8 +188,8 @@ def train(teacher, student, epoch):
         teacher_outputs = teacher(inputs)
         student_outputs = student(inputs)
 
-        teacher_features = apply_svd(teacher_outputs, 10)
-        student_features = apply_svd(student_outputs, 10)
+        teacher_features = apply_svd(teacher_outputs[2], 10)
+        student_features = apply_svd(student_outputs[2], 10)
 
         loss = BETA * (criterion(utils.FT(student_features), utils.FT(teacher_features))) \
             + criterion_CE(student_outputs[3], targets)
