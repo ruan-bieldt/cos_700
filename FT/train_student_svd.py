@@ -127,6 +127,18 @@ def apply_svd(feature_maps, num_singular_values_to_keep):
     # Reshape the feature maps for SVD
     batch_size, num_channels, height, width = feature_maps.size()
     reshaped_feature_maps = feature_maps.view(batch_size, num_channels, -1)
+
+    is_nan = torch.isnan(reshaped_feature_maps)
+    is_inf = torch.isinf(reshaped_feature_maps)
+    # Print the result
+    print(is_nan)
+    print(is_inf)
+    # Replace NaN with 0
+    reshaped_feature_maps[reshaped_feature_maps != reshaped_feature_maps] = 0
+
+    # Replace INF values with 0
+    reshaped_feature_maps[reshaped_feature_maps == float('inf')] = 0
+    reshaped_feature_maps[reshaped_feature_maps == -float('inf')] = 0
     # Compute SVD
     U, S, V = torch.svd(reshaped_feature_maps)
 

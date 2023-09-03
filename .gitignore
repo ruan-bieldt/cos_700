@@ -3,3 +3,5 @@ venv/
 data/
 .vscode/
 __pycache__/
+FT/logs
+FT/runs
