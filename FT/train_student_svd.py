@@ -92,7 +92,7 @@ BETA = args.beta
 # Load pretrained models
 Teacher = ResNet56()
 path = args.load_pretrained_teacher
-state = torch.load(path)
+state = torch.load(path, map_location=torch.device(DEVICE))
 utils.load_checkpoint(Teacher, state)
 Teacher.to(DEVICE)
 
@@ -127,7 +127,6 @@ def apply_svd(feature_maps, num_singular_values_to_keep):
     # Reshape the feature maps for SVD
     batch_size, num_channels, height, width = feature_maps.size()
     reshaped_feature_maps = feature_maps.view(batch_size, num_channels, -1)
-
     # Compute SVD
     U, S, V = torch.svd(reshaped_feature_maps)
 
@@ -195,18 +194,16 @@ def train(teacher, student, epoch):
         inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
         optimizer.zero_grad()
 
-        # Knowledge transfer with FT loss at the last layer
+        # Knowledge transfer with SVD loss at the last layer
         ###################################################################################
         teacher_outputs = teacher(inputs)
         student_outputs = student(inputs)
 
-        teacher_features = apply_svd(
-            z_score_normalization(teacher_outputs[2]), 5)
-        student_features = apply_svd(
-            z_score_normalization(student_outputs[2].cpu()), 5)
+        teacher_features = apply_svd(teacher_outputs[2], 10)
+        student_features = apply_svd(student_outputs[2], 10)
 
-        loss = BETA * (criterion(utils.FT(student_features), utils.FT(teacher_features.cpu()))) \
-            + criterion_CE(student_outputs[3], targets)
+        loss = BETA * (criterion(utils.FT(student_features), utils.FT(
+            teacher_features.detach()))) + criterion_CE(student_outputs[3], targets)
         ###################################################################################
         loss.backward()
         optimizer.step()
