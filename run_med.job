@@ -4,8 +4,8 @@
 #PBS -P CSCI1166
 #PBS -l select=1:ncpus=10:mem=64gb:ngpus=1
 #PBS -l walltime=12:00:00
-#PBS -o /mnt/lustre/users/rbieldt/cos_700/stdoutputmed.out
-#PBS -e /mnt/lustre/users/rbieldt/cos_700/stderrormed.out
+#PBS -o /mnt/lustre/users/rbieldt/cos_700/stdoutputsvd.out
+#PBS -e /mnt/lustre/users/rbieldt/cos_700/stderrorsvd.out
 #PBS -m abe -M u13145992@tuks.co.za
 
 ulimit -s unlimited
@@ -20,5 +20,5 @@ runs="1"
 for run in $runs
 do
     echo 'Starting run'
-    python train_student.py --cu_num 0
+    python train_student_svd.py --cu_num 0
 done
