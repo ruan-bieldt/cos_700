@@ -113,7 +113,7 @@ scheduler = optim.lr_scheduler.MultiStepLR(
 
 def apply_svd(feature_maps, num_singular_values_to_keep):
     # Reshape the feature maps for SVD
-    batch_size, num_channels, height, width = feature_maps.size()
+    batch_size, num_channels, height, width = feature_maps.shape()
     reshaped_feature_maps = feature_maps.view(batch_size, num_channels, -1)
 
     # Compute SVD
