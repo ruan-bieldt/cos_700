@@ -125,20 +125,8 @@ def z_score_normalization(feature_maps):
 
 def apply_svd(feature_maps, num_singular_values_to_keep):
     # Reshape the feature maps for SVD
-    batch_size, num_channels, height, width = feature_maps.size()
+    batch_size, num_channels, height, width = feature_maps.shape
     reshaped_feature_maps = feature_maps.view(batch_size, num_channels, -1)
-
-    is_nan = torch.isnan(reshaped_feature_maps)
-    is_inf = torch.isinf(reshaped_feature_maps)
-    # Print the result
-    print(is_nan)
-    print(is_inf)
-    # Replace NaN with 0
-    reshaped_feature_maps[reshaped_feature_maps != reshaped_feature_maps] = 0
-
-    # Replace INF values with 0
-    reshaped_feature_maps[reshaped_feature_maps == float('inf')] = 0
-    reshaped_feature_maps[reshaped_feature_maps == -float('inf')] = 0
     # Compute SVD
     U, S, V = torch.svd(reshaped_feature_maps)
 
@@ -214,7 +202,7 @@ def train(teacher, student, epoch):
         teacher_features = apply_svd(teacher_outputs[2].cpu(), 10)
         student_features = apply_svd(student_outputs[2].cpu(), 10)
 
-        loss = BETA * (criterion(utils.FT(student_features), utils.FT(
+        loss = BETA * (criterion(utils.FT(student_features.detach()), utils.FT(
             teacher_features.detach()))) + criterion_CE(student_outputs[3], targets)
         ###################################################################################
         loss.backward()
@@ -248,8 +236,6 @@ if __name__ == '__main__':
         os.makedirs('logs/' + path)
 
     # Save argparse arguments as logging
-    with open('logs/{}/commandline_args.txt'.format(path), 'w') as f:
-        json.dump(args.__dict__, f, indent=2)
     # Instantiate logger
     logger = SummaryLogger(path)
 
@@ -268,6 +254,12 @@ if __name__ == '__main__':
                     epoch=epoch, acc_net=test_acc)
                 )
         f.close()
+
+    utils.save_checkpoint({
+        'epoch': epoch,
+        'state_dict': Student.state_dict(),
+        'optimizer': optimizer.state_dict(),
+    }, True, 'ckpt/' + path, filename='Model_{}.pth'.format(epoch))
 
     utils.save_checkpoint({
         'epoch': epoch,
