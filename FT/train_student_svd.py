@@ -41,8 +41,6 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
 args = parser.parse_args()
-print(args)
-
 
 #### random Seed ####
 num = random.randint(1, 10000)
@@ -77,7 +75,7 @@ testloader = torch.utils.data.DataLoader(
     testset, batch_size=100, shuffle=False, num_workers=4)
 
 # Other parameters
-DEVICE = torch.device("cuda")
+DEVICE = torch.device("mps")
 RESUME_EPOCH = args.resume_epoch
 DECAY_EPOCH = args.decay_epoch
 DECAY_EPOCH = [ep - RESUME_EPOCH for ep in DECAY_EPOCH]
@@ -87,7 +85,7 @@ W_DECAY = args.w_decay
 base_lr = args.lr
 RATE = args.rate
 BETA = args.beta
-
+SINGULAR_VALUES = 64
 
 # Load pretrained models
 Teacher = ResNet56()
@@ -99,7 +97,9 @@ Teacher.to(DEVICE)
 
 # student models
 Student = ResNet20()
+Translator_s = Translator(64, 64)
 Student.to(DEVICE)
+Translator_s.to(DEVICE)
 
 # Loss and Optimizer
 criterion_CE = nn.CrossEntropyLoss()
@@ -109,6 +109,10 @@ optimizer = optim.SGD(Student.parameters(), lr=base_lr,
                       momentum=0.9, weight_decay=W_DECAY)
 scheduler = optim.lr_scheduler.MultiStepLR(
     optimizer, milestones=DECAY_EPOCH, gamma=0.1)
+optimizer_module = optim.SGD(Translator_s.parameters(
+), lr=base_lr, momentum=0.9, weight_decay=W_DECAY)
+scheduler_module = optim.lr_scheduler.MultiStepLR(
+    optimizer_module, milestones=DECAY_EPOCH, gamma=0.1)
 
 
 def z_score_normalization(feature_maps):
@@ -177,32 +181,35 @@ def eval(net):
     return val_loss / (b_idx + 1),  correct / total
 
 
-def train(teacher, student, epoch):
+def train(teacher, student, module_s, epoch):
     epoch_start_time = time.time()
     print('\n EPOCH: %d' % epoch)
 
     teacher.eval()
     student.train()
+    module_s.train()
 
     train_loss = 0
     correct = 0
     total = 0
 
     global optimizer
+    global optimizer_module
 
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
         optimizer.zero_grad()
+        optimizer_module.zero_grad()
 
         # Knowledge transfer with SVD loss at the last layer
         ###################################################################################
         teacher_outputs = teacher(inputs)
         student_outputs = student(inputs)
 
-        teacher_features = apply_svd(teacher_outputs[2].cpu(), 10)
-        student_features = apply_svd(student_outputs[2].cpu(), 10)
+        teacher_features = apply_svd(teacher_outputs[2], 32)
+        student_features = module_s(student_outputs[2])
 
-        loss = BETA * (criterion(utils.FT(student_features.detach()), utils.FT(
+        loss = BETA * (criterion(utils.FT(student_features), utils.FT(
             teacher_features.detach()))) + criterion_CE(student_outputs[3], targets)
         ###################################################################################
         loss.backward()
@@ -243,7 +250,7 @@ if __name__ == '__main__':
         f = open(os.path.join("logs/" + path, 'log.txt'), "a")
 
         ### Train ###
-        train_loss, acc = train(Teacher, Student, epoch)
+        train_loss, acc = train(Teacher, Student, Translator_s, epoch)
         scheduler.step()
 
         ### Evaluate  ###
