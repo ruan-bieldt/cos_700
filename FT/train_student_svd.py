@@ -34,7 +34,7 @@ parser.add_argument('--load_pretrained_paraphraser',
 parser.add_argument('--save_model', default='ckpt.t7', type=str)
 parser.add_argument('--rate', type=float, default=0.5,
                     help='The paraphrase rate k')
-parser.add_argument('--beta', type=int, default=500)
+parser.add_argument('--beta', type=int, default=250)
 
 
 torch.backends.cudnn.deterministic = True
