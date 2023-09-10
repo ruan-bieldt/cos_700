@@ -5,7 +5,7 @@
 #PBS -l select=1:ncpus=10:mem=64gb:ngpus=1
 #PBS -l walltime=12:00:00
 #PBS -o /mnt/lustre/users/rbieldt/cos_700/tucker.out
-#PBS -e /mnt/lustre/users/rbieldt/cos_700/tucker.out
+#PBS -e /mnt/lustre/users/rbieldt/cos_700/tuckererror.out
 #PBS -m abe -M u13145992@tuks.co.za
 
 ulimit -s unlimited
