@@ -34,7 +34,7 @@ parser.add_argument('--load_pretrained_paraphraser',
 parser.add_argument('--save_model', default='ckpt.t7', type=str)
 parser.add_argument('--rate', type=float, default=0.5,
                     help='The paraphrase rate k')
-parser.add_argument('--beta', type=int, default=250)
+parser.add_argument('--beta', type=int, default=500)
 
 
 torch.backends.cudnn.deterministic = True
@@ -75,7 +75,7 @@ testloader = torch.utils.data.DataLoader(
     testset, batch_size=100, shuffle=False, num_workers=4)
 
 # Other parameters
-DEVICE = torch.device("cuda")
+DEVICE = torch.device("mps")
 RESUME_EPOCH = args.resume_epoch
 DECAY_EPOCH = args.decay_epoch
 DECAY_EPOCH = [ep - RESUME_EPOCH for ep in DECAY_EPOCH]
@@ -97,7 +97,7 @@ Teacher.to(DEVICE)
 
 # student models
 Student = ResNet20()
-Translator_s = Translator(64, 64)
+Translator_s = Translator(64, 32)
 Student.to(DEVICE)
 Translator_s.to(DEVICE)
 
@@ -127,25 +127,37 @@ def z_score_normalization(feature_maps):
     return normalized_feature_maps
 
 
-def apply_svd(feature_maps, num_singular_values_to_keep):
-    # Reshape the feature maps for SVD
+# def apply_svd(feature_maps, num_singular_values_to_keep):
+#     # Reshape the feature maps for SVD
+#     batch_size, num_channels, height, width = feature_maps.shape
+#     reshaped_feature_maps = feature_maps.view(batch_size, num_channels, -1)
+#     # Compute SVD
+#     U, S, V = torch.svd(reshaped_feature_maps)
+
+#     # Keep only the top 'num_singular_values_to_keep' singular values/components
+#     U = U[:, :, :num_singular_values_to_keep]
+#     S = S[:, :num_singular_values_to_keep]
+#     V = V[:, :, :num_singular_values_to_keep]
+
+#     # Reconstruct the feature maps
+#     reconstructed_feature_maps = torch.matmul(
+#         U, torch.matmul(torch.diag_embed(S), V.permute(0, 2, 1)))
+#     reconstructed_feature_maps = reconstructed_feature_maps.view(
+#         batch_size, num_channels, height, width)
+
+#     return reconstructed_feature_maps
+
+def apply_svd(feature_maps, top_k):
+    reduced_tensors = []
     batch_size, num_channels, height, width = feature_maps.shape
-    reshaped_feature_maps = feature_maps.view(batch_size, num_channels, -1)
-    # Compute SVD
-    U, S, V = torch.svd(reshaped_feature_maps)
+    for i in range(feature_maps.size(0)):
+        x_reshaped = feature_maps[i].view(num_channels, -1)
+        u, s, _ = torch.svd(x_reshaped)
+        reduced_u = u[:, :top_k]
+        x_reduced = reduced_u @ torch.diag(s[:top_k])
+        reduced_tensors.append(x_reduced.view(top_k, height, width))
 
-    # Keep only the top 'num_singular_values_to_keep' singular values/components
-    U = U[:, :, :num_singular_values_to_keep]
-    S = S[:, :num_singular_values_to_keep]
-    V = V[:, :, :num_singular_values_to_keep]
-
-    # Reconstruct the feature maps
-    reconstructed_feature_maps = torch.matmul(
-        U, torch.matmul(torch.diag_embed(S), V.permute(0, 2, 1)))
-    reconstructed_feature_maps = reconstructed_feature_maps.view(
-        batch_size, num_channels, height, width)
-
-    return reconstructed_feature_maps
+    return torch.stack(reduced_tensors)
 
 
 def eval(net):
