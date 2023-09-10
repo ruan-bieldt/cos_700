@@ -10,6 +10,8 @@ import torchvision
 import argparse
 import json
 import time
+import tensorly as tl
+from tensorly.decomposition import tucker
 from datetime import datetime
 import warnings
 import os
@@ -115,18 +117,6 @@ scheduler_module = optim.lr_scheduler.MultiStepLR(
     optimizer_module, milestones=DECAY_EPOCH, gamma=0.1)
 
 
-def z_score_normalization(feature_maps):
-    # Compute the mean and standard deviation along the batch and channel dimensions
-    mean = torch.mean(feature_maps, dim=(0, 2, 3), keepdim=True)
-    std = torch.std(feature_maps, dim=(0, 2, 3), keepdim=True)
-
-    # Apply z-score normalization
-    # Adding a small epsilon to avoid division by zero
-    normalized_feature_maps = (feature_maps - mean) / (std + 1e-6)
-
-    return normalized_feature_maps
-
-
 # def apply_svd(feature_maps, num_singular_values_to_keep):
 #     # Reshape the feature maps for SVD
 #     batch_size, num_channels, height, width = feature_maps.shape
@@ -147,17 +137,32 @@ def z_score_normalization(feature_maps):
 
 #     return reconstructed_feature_maps
 
-def apply_svd(feature_maps, top_k):
-    reduced_tensors = []
-    batch_size, num_channels, height, width = feature_maps.shape
-    for i in range(feature_maps.size(0)):
-        x_reshaped = feature_maps[i].view(num_channels, -1)
-        u, s, _ = torch.svd(x_reshaped)
-        reduced_u = u[:, :top_k]
-        x_reduced = reduced_u @ torch.diag(s[:top_k])
-        reduced_tensors.append(x_reduced.view(top_k, height, width))
+# def apply_svd(feature_maps, top_k):
+#     reduced_tensors = []
+#     batch_size, num_channels, height, width = feature_maps.shape
+#     for i in range(feature_maps.size(0)):
+#         x_reshaped = feature_maps[i].view(num_channels, -1)
+#         u, s, _ = torch.svd(x_reshaped)
+#         reduced_u = u[:, :top_k]
+#         x_reduced = reduced_u @ torch.diag(s[:top_k])
+#         reduced_tensors.append(x_reduced.view(top_k, height, width))
 
-    return torch.stack(reduced_tensors)
+#     return torch.stack(reduced_tensors)
+
+def tucker_decomposition(feature_maps, rank):
+
+    tl.set_backend('pytorch')
+    batch_size, num_channels, height, width = feature_maps.shape
+    ranks = [batch_size, rank, height, width]
+
+    # Decompose the tensor
+    core, factors = tl.decomposition.tucker(
+        feature_maps, rank=ranks)
+
+    x_reconstructed = tl.tucker_to_tensor((core, factors))
+    x_reconstructed = x_reconstructed.to(feature_maps.device)
+
+    return x_reconstructed
 
 
 def eval(net):
@@ -217,9 +222,8 @@ def train(teacher, student, module_s, epoch):
         ###################################################################################
         teacher_outputs = teacher(inputs)
         student_outputs = student(inputs)
-
-        teacher_features = apply_svd(teacher_outputs[2], 32)
-        student_features = module_s(student_outputs[2])
+        teacher_features = tucker_decomposition(teacher_outputs[2], 32)
+        student_features = tucker_decomposition(student_outputs[2], 32)
 
         loss = BETA * (criterion(utils.FT(student_features), utils.FT(
             teacher_features.detach()))) + criterion_CE(student_outputs[3], targets)
