@@ -15,12 +15,12 @@ import pdb
 import numpy as np
 
 
-
 def save_checkpoint(state, is_best, path, filename='checkpoint.pth.tar'):
     filename = os.path.join(path, filename)
     torch.save(state, filename)
     if is_best:
-        shutil.copyfile(filename, os.path.join(path,'model_best.pth.tar'))
+        shutil.copyfile(filename, os.path.join(path, 'model_best.pth.tar'))
+
 
 def load_checkpoint(model, checkpoint):
     m_keys = list(model.state_dict().keys())
@@ -44,6 +44,7 @@ def load_checkpoint(model, checkpoint):
     # print(not_c_keys)
     # print('\n\n')
 
+
 def get_cifar100_dataloaders(train_batch_size, test_batch_size):
     transform_train = transforms.Compose([
         transforms.Pad(4, padding_mode='reflect'),
@@ -51,27 +52,30 @@ def get_cifar100_dataloaders(train_batch_size, test_batch_size):
         transforms.RandomCrop(32),
         transforms.ToTensor(),
         transforms.Normalize(mean=[x / 255.0 for x in [129.3, 124.1, 112.4]],
-                                     std=[x / 255.0 for x in [68.2, 65.4, 70.4]])
+                             std=[x / 255.0 for x in [68.2, 65.4, 70.4]])
     ])
 
     transform_test = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=[x / 255.0 for x in [129.3, 124.1, 112.4]],
-                                     std=[x / 255.0 for x in [68.2, 65.4, 70.4]])])
-
+                             std=[x / 255.0 for x in [68.2, 65.4, 70.4]])])
 
     trainset = torchvision.datasets.CIFAR100(root='~/data', train=True, download=True,
                                              transform=transform_train)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=train_batch_size, shuffle=True, num_workers=4)
+    trainloader = torch.utils.data.DataLoader(
+        trainset, batch_size=train_batch_size, shuffle=True, num_workers=4)
 
     testset = torchvision.datasets.CIFAR100(root='~/data', train=False, download=True,
                                             transform=transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=4)
+    testloader = torch.utils.data.DataLoader(
+        testset, batch_size=test_batch_size, shuffle=False, num_workers=4)
 
     subset_idx = np.random.randint(0, len(trainset), size=10000)
-    valloader = torch.utils.data.DataLoader(trainset, batch_size=train_batch_size, shuffle=False, num_workers=4, sampler=SubsetRandomSampler(subset_idx))
+    valloader = torch.utils.data.DataLoader(
+        trainset, batch_size=train_batch_size, shuffle=False, num_workers=4, sampler=SubsetRandomSampler(subset_idx))
 
     return trainloader, valloader, testloader
+
 
 def get_cifar100_dataloaders_disjoint(train_batch_size, test_batch_size):
     np.random.seed(0)
@@ -81,28 +85,32 @@ def get_cifar100_dataloaders_disjoint(train_batch_size, test_batch_size):
         transforms.RandomCrop(32),
         transforms.ToTensor(),
         transforms.Normalize(mean=[x / 255.0 for x in [129.3, 124.1, 112.4]],
-                                     std=[x / 255.0 for x in [68.2, 65.4, 70.4]])
+                             std=[x / 255.0 for x in [68.2, 65.4, 70.4]])
     ])
     transform_test = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize(mean=[x / 255.0 for x in [129.3, 124.1, 112.4]],
-                                     std=[x / 255.0 for x in [68.2, 65.4, 70.4]])])
+                             std=[x / 255.0 for x in [68.2, 65.4, 70.4]])])
 
+    trainset = torchvision.datasets.CIFAR100(
+        root='~/data', train=True, download=True, transform=transform_train)
 
-    trainset = torchvision.datasets.CIFAR100(root='~/data', train=True, download=True,transform=transform_train)
-
-    total_idx = np.arange(0,len(trainset))
+    total_idx = np.arange(0, len(trainset))
     np.random.shuffle(total_idx)
     subset_idx = total_idx[:10000]
     _subset_idx = total_idx[~np.in1d(total_idx, subset_idx)]
-    valloader = torch.utils.data.DataLoader(trainset, batch_size=train_batch_size, shuffle=False, num_workers=4, sampler=SubsetRandomSampler(subset_idx))
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=train_batch_size, shuffle=False, num_workers=4, sampler=SubsetRandomSampler(_subset_idx))
+    valloader = torch.utils.data.DataLoader(
+        trainset, batch_size=train_batch_size, shuffle=False, num_workers=4, sampler=SubsetRandomSampler(subset_idx))
+    trainloader = torch.utils.data.DataLoader(
+        trainset, batch_size=train_batch_size, shuffle=False, num_workers=4, sampler=SubsetRandomSampler(_subset_idx))
 
-    testset = torchvision.datasets.CIFAR100(root='~/data', train=False, download=True, transform=transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=test_batch_size, shuffle=False, num_workers=4)
+    testset = torchvision.datasets.CIFAR100(
+        root='~/data', train=False, download=True, transform=transform_test)
+    testloader = torch.utils.data.DataLoader(
+        testset, batch_size=test_batch_size, shuffle=False, num_workers=4)
 
     return trainloader, valloader, testloader
 
 
 def FT(x):
-    return F.normalize(x.view(x.size(0), -1))
+    return F.normalize(x.reshape(x.size(0), -1))
