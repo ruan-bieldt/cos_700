@@ -36,7 +36,7 @@ parser.add_argument('--load_pretrained_paraphraser',
 parser.add_argument('--save_model', default='ckpt.t7', type=str)
 parser.add_argument('--rate', type=float, default=0.5,
                     help='The paraphrase rate k')
-parser.add_argument('--beta', type=int, default=500)
+parser.add_argument('--beta', type=int, default=250)
 
 
 torch.backends.cudnn.deterministic = True
@@ -222,11 +222,14 @@ def train(teacher, student, module_s, epoch):
         ###################################################################################
         teacher_outputs = teacher(inputs)
         student_outputs = student(inputs)
-        teacher_features = tucker_decomposition(teacher_outputs[2], 32)
-        student_features = tucker_decomposition(student_outputs[2], 32)
+        teacher_features2 = tucker_decomposition(teacher_outputs[1], 16)
+        student_features2 = tucker_decomposition(student_outputs[1], 16)
+        teacher_features3 = tucker_decomposition(teacher_outputs[2], 32)
+        student_features3 = tucker_decomposition(student_outputs[2], 32)
 
-        loss = BETA * (criterion(utils.FT(student_features), utils.FT(
-            teacher_features.detach()))) + criterion_CE(student_outputs[3], targets)
+        loss = BETA * (criterion(utils.FT(student_features3), utils.FT(
+            teacher_features3.detach())) + criterion(utils.FT(student_features2), utils.FT(
+                teacher_features2.detach()))) + criterion_CE(student_outputs[3], targets)
         ###################################################################################
         loss.backward()
         optimizer.step()
