@@ -99,9 +99,7 @@ Teacher.to(DEVICE)
 
 # student models
 Student = ResNet20()
-Translator_s = Translator(64, 32)
 Student.to(DEVICE)
-Translator_s.to(DEVICE)
 
 # Loss and Optimizer
 criterion_CE = nn.CrossEntropyLoss()
@@ -111,43 +109,7 @@ optimizer = optim.SGD(Student.parameters(), lr=base_lr,
                       momentum=0.9, weight_decay=W_DECAY)
 scheduler = optim.lr_scheduler.MultiStepLR(
     optimizer, milestones=DECAY_EPOCH, gamma=0.1)
-optimizer_module = optim.SGD(Translator_s.parameters(
-), lr=base_lr, momentum=0.9, weight_decay=W_DECAY)
-scheduler_module = optim.lr_scheduler.MultiStepLR(
-    optimizer_module, milestones=DECAY_EPOCH, gamma=0.1)
 
-
-# def apply_svd(feature_maps, num_singular_values_to_keep):
-#     # Reshape the feature maps for SVD
-#     batch_size, num_channels, height, width = feature_maps.shape
-#     reshaped_feature_maps = feature_maps.view(batch_size, num_channels, -1)
-#     # Compute SVD
-#     U, S, V = torch.svd(reshaped_feature_maps)
-
-#     # Keep only the top 'num_singular_values_to_keep' singular values/components
-#     U = U[:, :, :num_singular_values_to_keep]
-#     S = S[:, :num_singular_values_to_keep]
-#     V = V[:, :, :num_singular_values_to_keep]
-
-#     # Reconstruct the feature maps
-#     reconstructed_feature_maps = torch.matmul(
-#         U, torch.matmul(torch.diag_embed(S), V.permute(0, 2, 1)))
-#     reconstructed_feature_maps = reconstructed_feature_maps.view(
-#         batch_size, num_channels, height, width)
-
-#     return reconstructed_feature_maps
-
-# def apply_svd(feature_maps, top_k):
-#     reduced_tensors = []
-#     batch_size, num_channels, height, width = feature_maps.shape
-#     for i in range(feature_maps.size(0)):
-#         x_reshaped = feature_maps[i].view(num_channels, -1)
-#         u, s, _ = torch.svd(x_reshaped)
-#         reduced_u = u[:, :top_k]
-#         x_reduced = reduced_u @ torch.diag(s[:top_k])
-#         reduced_tensors.append(x_reduced.view(top_k, height, width))
-
-#     return torch.stack(reduced_tensors)
 
 def tucker_decomposition(feature_maps, rank):
 
@@ -198,13 +160,12 @@ def eval(net):
     return val_loss / (b_idx + 1),  correct / total
 
 
-def train(teacher, student, module_s, epoch):
+def train(teacher, student, epoch):
     epoch_start_time = time.time()
     print('\n EPOCH: %d' % epoch)
 
     teacher.eval()
     student.train()
-    module_s.train()
 
     train_loss = 0
     correct = 0
@@ -222,14 +183,11 @@ def train(teacher, student, module_s, epoch):
         ###################################################################################
         teacher_outputs = teacher(inputs)
         student_outputs = student(inputs)
-        teacher_features2 = tucker_decomposition(teacher_outputs[1], 16)
-        student_features2 = tucker_decomposition(student_outputs[1], 16)
         teacher_features3 = tucker_decomposition(teacher_outputs[2], 32)
         student_features3 = tucker_decomposition(student_outputs[2], 32)
 
         loss = BETA * (criterion(utils.FT(student_features3), utils.FT(
-            teacher_features3.detach())) + criterion(utils.FT(student_features2), utils.FT(
-                teacher_features2.detach()))) + criterion_CE(student_outputs[3], targets)
+            teacher_features3.detach()))) + criterion_CE(student_outputs[3], targets)
         ###################################################################################
         loss.backward()
         optimizer.step()
@@ -269,7 +227,7 @@ if __name__ == '__main__':
         f = open(os.path.join("logs/" + path, 'log.txt'), "a")
 
         ### Train ###
-        train_loss, acc = train(Teacher, Student, Translator_s, epoch)
+        train_loss, acc = train(Teacher, Student, epoch)
         scheduler.step()
 
         ### Evaluate  ###

@@ -14,7 +14,7 @@ cd /mnt/lustre/users/rbieldt/cos_700
 source /mnt/lustre/users/rbieldt/cos_700/venv/bin/activate
 module load chpc/python/anaconda/3-2021.11
 cd FT
-runs="1"
+runs="3"
 
 for run in $runs
 do
