@@ -172,7 +172,6 @@ def train(teacher, student, epoch):
     total = 0
 
     global optimizer
-    global optimizer_module
 
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
