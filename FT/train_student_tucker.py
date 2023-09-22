@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser(description='Pharaphaser training')
 parser.add_argument('--text', default='log.txt', type=str)
-parser.add_argument('--exp_name', default='cifar10/FT', type=str)
+parser.add_argument('--exp_name', default='cifar10/Tucker', type=str)
 parser.add_argument('--log_time', default='1', type=str)
 parser.add_argument('--lr', default='0.1', type=float)
 parser.add_argument('--resume_epoch', default='0', type=int)
