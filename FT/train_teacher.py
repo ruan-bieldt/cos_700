@@ -74,7 +74,7 @@ testloader = torch.utils.data.DataLoader(
 
 
 # Other parameters
-DEVICE = torch.device("mps")
+DEVICE = torch.device("cuda")
 RESUME_EPOCH = args.resume_epoch
 DECAY_EPOCH = args.decay_epoch
 DECAY_EPOCH = [ep - RESUME_EPOCH for ep in DECAY_EPOCH]
@@ -85,7 +85,7 @@ base_lr = args.lr
 
 # Model
 # model = ResNet56()
-model = ResNet20()
+model = ResNet56()
 
 
 model.to(DEVICE)
