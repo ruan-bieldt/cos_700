@@ -177,7 +177,6 @@ def train(teacher, student, epoch):
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         inputs, targets = inputs.to(DEVICE), targets.to(DEVICE)
         optimizer.zero_grad()
-        optimizer_module.zero_grad()
 
         # Knowledge transfer with SVD loss at the last layer
         ###################################################################################
