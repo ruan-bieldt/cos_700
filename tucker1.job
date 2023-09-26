@@ -19,5 +19,5 @@ runs="3"
 for run in $runs
 do
     echo 'Starting run'
-    python train_student_tucker.py --cu_num 0
+    python train_student_tucker.py --beta 1000
 done
