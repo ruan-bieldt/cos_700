@@ -30,13 +30,13 @@ parser.add_argument('--w_decay', default='5e-4', type=float)
 parser.add_argument('--cu_num', default='0', type=str)
 parser.add_argument('--seed', default='1', type=str)
 parser.add_argument('--load_pretrained_teacher',
-                    default='trained/Teacher.pth', type=str)
+                    default='trained/teacher_112_cifar_10.pth', type=str)
 parser.add_argument('--load_pretrained_paraphraser',
                     default='trained/Paraphraser.pth', type=str)
 parser.add_argument('--save_model', default='ckpt.t7', type=str)
 parser.add_argument('--rate', type=float, default=0.5,
                     help='The paraphrase rate k')
-parser.add_argument('--beta', type=int, default=250)
+parser.add_argument('--beta', type=int, default=125)
 
 
 torch.backends.cudnn.deterministic = True
@@ -87,10 +87,9 @@ W_DECAY = args.w_decay
 base_lr = args.lr
 RATE = args.rate
 BETA = args.beta
-SINGULAR_VALUES = 64
 
 # Load pretrained models
-Teacher = ResNet56()
+Teacher = ResNet112()
 path = args.load_pretrained_teacher
 state = torch.load(path, map_location=torch.device(DEVICE))
 utils.load_checkpoint(Teacher, state)
