@@ -203,7 +203,7 @@ if __name__ == '__main__':
                 'epoch': epoch,
                 'state_dict': model.state_dict(),
                 'optimizer': optimizer.state_dict(),
-            }, True, 'FT/trained/', filename='teacher_112_cifar_10.pth')
+            }, True, 'trained/', filename='teacher_112_cifar_10.pth')
 
         f.write('EPOCH {epoch} \t'
                 'ACC_net : {acc_net:.4f} \t  \n'.format(
