@@ -85,7 +85,7 @@ base_lr = args.lr
 
 # Model
 # model = ResNet56()
-model = ResNet56()
+model = ResNet112()
 
 
 model.to(DEVICE)
@@ -96,6 +96,8 @@ optimizer = optim.SGD(model.parameters(), lr=base_lr,
 scheduler = optim.lr_scheduler.MultiStepLR(
     optimizer, milestones=DECAY_EPOCH, gamma=0.1)
 criterion_CE = nn.CrossEntropyLoss()
+
+max_acc = 0.0
 
 
 def eval(net):
@@ -195,15 +197,16 @@ if __name__ == '__main__':
 
         ### Evaluate  ###
         val_loss, test_acc = eval(model)
+        if test_acc > max_acc:
+            max_acc = test_acc
+            utils.save_checkpoint({
+                'epoch': epoch,
+                'state_dict': model.state_dict(),
+                'optimizer': optimizer.state_dict(),
+            }, True, 'FT/trained/', filename='teacher_112_cifar_10.pth')
 
         f.write('EPOCH {epoch} \t'
                 'ACC_net : {acc_net:.4f} \t  \n'.format(
                     epoch=epoch, acc_net=test_acc)
                 )
         f.close()
-
-    utils.save_checkpoint({
-        'epoch': epoch,
-        'state_dict': model.state_dict(),
-        'optimizer': optimizer.state_dict(),
-    }, True, 'ckpt/' + path, filename='Model_{}.pth'.format(epoch))
