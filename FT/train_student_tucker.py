@@ -97,7 +97,7 @@ Teacher.to(DEVICE)
 
 
 # student models
-Student = ResNet20()
+Student = ResNet56()
 Student.to(DEVICE)
 
 # Loss and Optimizer
