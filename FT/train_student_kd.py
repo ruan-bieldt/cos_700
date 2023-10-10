@@ -166,7 +166,7 @@ def train(teacher, student, epoch):
         teacher_outputs = teacher(inputs)
         student_outputs = student(inputs)
 
-        loss = 7 * (criterion_CE(student_outputs[3], teacher_outputs[3]/7)) + criterion_CE(
+        loss = 7 * (criterion(student_outputs[3], teacher_outputs[3]/7)) + criterion_CE(
             student_outputs[3], targets)
         ###################################################################################
         loss.backward()
